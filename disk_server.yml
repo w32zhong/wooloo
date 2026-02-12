@@ -1,5 +1,3 @@
-version: '3.8'
-
 x-seaweed: &seaweed_vols_base
   image: chrislusf/seaweedfs
   restart: always
