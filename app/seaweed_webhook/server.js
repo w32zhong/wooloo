@@ -1,4 +1,4 @@
-const fastify = require('fastify')({ logger: true });
+const fastify = require('fastify')({ logger: true, disableRequestLogging: true });
 
 //{
 //  event_type: 'create',
