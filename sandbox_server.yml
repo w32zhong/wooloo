@@ -15,9 +15,9 @@ services:
         mkdir -p /config/wg_confs;
         NEW_KEY=$$(wg genkey);
         sed \"s|{{KEY}}|$${NEW_KEY}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
-        echo '✅ new server wg0.conf';
+        echo '✅ new wg0.conf.';
       else
-        echo 'ℹ️ existing wg0.conf, keep it.';
+        echo 'ℹ️ keep existing wg0.conf.';
       fi;
       exec /init
       "

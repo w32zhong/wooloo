@@ -95,6 +95,19 @@ services:
       - PGID=1000
     volumes:
       - ./mnt/wg_config:/config
+      - ./templates/wg_client.ini:/_temp/server.conf
+    entrypoint: >
+      /bin/sh -c "
+      if [ ! -f /config/wg_confs/wg0.conf ]; then
+        mkdir -p /config/wg_confs;
+        NEW_KEY=$$(wg genkey);
+        sed \"s|{{KEY}}|$${NEW_KEY}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
+        echo '✅ new wg0.conf.';
+      else
+        echo 'ℹ️ keep existing wg0.conf.';
+      fi;
+      exec /init
+      "
     restart: unless-stopped
 
 networks:
