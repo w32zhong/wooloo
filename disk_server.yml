@@ -1,0 +1,68 @@
+version: '3.8'
+
+x-seaweed: &seaweed_vols_base
+  image: chrislusf/seaweedfs
+  restart: always
+  networks:
+    - seaweed_net
+
+services:
+  seaweed_master:
+    image: chrislusf/seaweedfs
+    restart: always
+    command: "master -volumeSizeLimitMB=${SEAWEED_VOLUME_SIZE_MB}"
+    ports:
+      - "9333:9333" # HTTP WebUI
+      - "19333:19333"
+    networks:
+      - seaweed_net
+    healthcheck: # Raft Leader ready?
+      test: ["CMD", "curl", "-f", "http://localhost:9333/dir/status"]
+      start_period: 30s
+      interval: 10s
+      timeout: 6s
+      retries: 1
+
+  seaweed_vol8081:
+    <<: *seaweed_vols_base
+    command: "volume -max=10 -master=seaweed_master:9333 -port=8081 -ip=${SEAWEED_HOST0} -ip.bind=0.0.0.0"
+    ports:
+      - "8081:8081"
+      - "18081:18081"
+    volumes:
+      - ./mnt/vol8081:/data
+    depends_on:
+      seaweed_master:
+        condition: service_healthy
+
+  seaweed_vol8082:
+    <<: *seaweed_vols_base
+    command: "volume -max=10 -master=seaweed_master:9333 -port=8082 -ip=${SEAWEED_HOST0} -ip.bind=0.0.0.0"
+    ports:
+      - "8082:8082"
+      - "18082:18082"
+    volumes:
+      - ./mnt/vol8082:/data
+    depends_on:
+      seaweed_master:
+        condition: service_healthy
+
+  fseaweed_filer:
+    image: chrislusf/seaweedfs
+    restart: always
+    command: "filer -master=seaweed_master:9333 -ip=${SEAWEED_HOST0} -ip.bind=0.0.0.0 -s3"
+    ports:
+      - "8888:8888"   # WebUI
+      - "8333:8333"   # S3 端口
+      - "18888:18888"
+    volumes:
+      - ./mnt/volmeta:/data
+    networks:
+      - seaweed_net
+    depends_on:
+      seaweed_master:
+        condition: service_healthy
+
+networks:
+  seaweed_net:
+    driver: bridge
