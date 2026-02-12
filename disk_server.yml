@@ -86,6 +86,35 @@ services:
     networks:
       - seaweed_net
 
+  wireguard_server:
+    image: lscr.io/linuxserver/wireguard
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - PEERS=1
+      - SERVERURL=yetiarch
+      - SERVERPORT=51820
+      - INTERNAL_SUBNET=10.8.0.0
+      - ALLOWEDIPS=10.8.0.0/16
+    volumes:
+      - ./mnt/wg_config:/config
+    ports:
+      - 51820:51820/udp
+    restart: unless-stopped
+
+  wireguard_client:
+    image: lscr.io/linuxserver/wireguard
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./mnt/wg_config:/config
+    restart: unless-stopped
+
 networks:
   seaweed_net:
     driver: bridge

@@ -1,6 +1,6 @@
 services:
   redis:
-    image: redis:latest
+    image: redis
     container_name: redis_server
     restart: always
     ports:
@@ -22,7 +22,7 @@ services:
       - sandbox_net
 
   jfs_format:
-    image: juicedata/juicefs:latest
+    image: juicedata/juicefs
     command: >
       format
       --storage s3
@@ -39,7 +39,7 @@ services:
         condition: service_healthy
 
   jfs_mount:
-    image: juicedata/juicefs:latest
+    image: juicedata/juicefs
     restart: always
     cap_add:
       - SYS_ADMIN
