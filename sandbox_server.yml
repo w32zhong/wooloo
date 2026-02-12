@@ -1,72 +1,96 @@
 services:
-  redis:
-    image: redis
-    container_name: redis_server
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      # 映射本地文件夹存放 RDB/AOF 数据
-      - ./mnt/redis_dump:/data
-    # 使用参数化指令
-    command: >
-      redis-server
-      --maxmemory ${REDIS_MAX_MEMORY:-512mb}
-      --maxmemory-policy noeviction
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - sandbox_net
-
-  jfs_format:
-    image: juicedata/juicefs
-    command: >
-      format
-      --storage s3
-      --bucket http://seaweed_master:8333/my-bucket
-      --access-key ${AWS_ACCESS_KEY_ID}
-      --secret-key ${AWS_SECRET_ACCESS_KEY}
-      --capacity ${JFS_CAPACITY_GB}
-      redis://redis_server:6379/1
-      ${JFS_NAME}
-    networks:
-      - sandbox_net
-    depends_on:
-      redis:
-        condition: service_healthy
-
-  jfs_mount:
-    image: juicedata/juicefs
-    restart: always
+  wireguard_server:
+    image: lscr.io/linuxserver/wireguard
     cap_add:
-      - SYS_ADMIN
-    devices:
-      - /dev/fuse:/dev/fuse
-    security_opt:
-      - apparmor:unconfined
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
     volumes:
-      - ./jfs_cache:/var/jfs_cache
-      - ./jfs:/mnt/jfs:shared # 挂载点
-    command: >
-      mount
-      --cache-dir /var/jfs_cache
-      --buffer-size ${JFS_BUFFER_SIZE_MB}
-      --cache-size ${JFS_CACHE_SIZE_MB}
-      --free-space-ratio 0.1
-      --get-timeout 10
-      --put-timeout 10
-      --io-retries 2
-      redis://redis_server:6379/1
-      /mnt/jfs
-    networks:
-      - sandbox_net
-    depends_on:
-      jfs_format:
-        condition: service_completed_successfully
+      - ./mnt/wg_config:/config
+      - ./templates/wg_server.ini:/_temp/server.conf
+    entrypoint: >
+      /bin/sh -c "
+      if [ ! -f /config/wg_confs/wg0.conf ]; then
+        mkdir -p /config/wg_confs;
+        NEW_KEY=$$(wg genkey);
+        sed \"s|{{KEY}}|$${NEW_KEY}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
+        echo '✅ new server wg0.conf';
+      else
+        echo 'ℹ️ existing wg0.conf, keep it.';
+      fi;
+      exec /init
+      "
+    restart: unless-stopped
 
-networks:
-  sandbox_net:
-    driver: bridge
+#  redis:
+#    image: redis
+#    container_name: redis_server
+#    restart: always
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      # 映射本地文件夹存放 RDB/AOF 数据
+#      - ./mnt/redis_dump:/data
+#    # 使用参数化指令
+#    command: >
+#      redis-server
+#      --maxmemory ${REDIS_MAX_MEMORY:-512mb}
+#      --maxmemory-policy noeviction
+#    healthcheck:
+#      test: ["CMD", "redis-cli", "ping"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    networks:
+#      - sandbox_net
+#
+#  jfs_format:
+#    image: juicedata/juicefs
+#    command: >
+#      format
+#      --storage s3
+#      --bucket http://seaweed_master:8333/my-bucket
+#      --access-key ${AWS_ACCESS_KEY_ID}
+#      --secret-key ${AWS_SECRET_ACCESS_KEY}
+#      --capacity ${JFS_CAPACITY_GB}
+#      redis://redis_server:6379/1
+#      ${JFS_NAME}
+#    networks:
+#      - sandbox_net
+#    depends_on:
+#      redis:
+#        condition: service_healthy
+#
+#  jfs_mount:
+#    image: juicedata/juicefs
+#    restart: always
+#    cap_add:
+#      - SYS_ADMIN
+#    devices:
+#      - /dev/fuse:/dev/fuse
+#    security_opt:
+#      - apparmor:unconfined
+#    volumes:
+#      - ./jfs_cache:/var/jfs_cache
+#      - ./jfs:/mnt/jfs:shared # 挂载点
+#    command: >
+#      mount
+#      --cache-dir /var/jfs_cache
+#      --buffer-size ${JFS_BUFFER_SIZE_MB}
+#      --cache-size ${JFS_CACHE_SIZE_MB}
+#      --free-space-ratio 0.1
+#      --get-timeout 10
+#      --put-timeout 10
+#      --io-retries 2
+#      redis://redis_server:6379/1
+#      /mnt/jfs
+#    networks:
+#      - sandbox_net
+#    depends_on:
+#      jfs_format:
+#        condition: service_completed_successfully
+#
+#networks:
+#  sandbox_net:
+#    driver: bridge
