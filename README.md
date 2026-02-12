@@ -1,12 +1,18 @@
-# Disk Server
+## Docker Compose Setup
 Modify `config.env`, and run Portainer:
 ```sh
 source config.env
 docker compose -f portainer-standalone.yml up
 ```
 
+To force restart a container:
 ```sh
-docker compose -f disk_server.yml up
+docker compose -f my_compose.yml up --force-recreate my_container
+```
+
+## Disk Server
+```sh
+docker compose -f disk_server.yml up --remove-orphans
 ```
 
 Web UI:
