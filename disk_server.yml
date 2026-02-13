@@ -114,7 +114,7 @@ services:
         echo 'ℹ️ keep existing wg0.conf.';
       fi;
 
-      ip addr flush dev wg0 && ip addr add $NEW_IP dev wg0;
+      ip addr flush dev wg0 && ip addr add $${NEW_IP} dev wg0;
       exec /init
       "
     restart: unless-stopped
