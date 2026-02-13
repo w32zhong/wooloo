@@ -34,6 +34,7 @@ Test WireGuard:
 ./app/wg_connect/wg_connect.sh yetiarch tk
 docker exec wg_client ip addr
 docker exec wg_client wg show
+docker exec wg_client ping -c 1 10.8.0.2
 ```
 
 ## Sandbox Server
@@ -42,4 +43,5 @@ Test WireGuard:
 ```sh
 docker exec wg_server ip addr
 docker exec wg_server wg show
+docker exec wg_server ping -c 1 10.8.0.1
 ```
