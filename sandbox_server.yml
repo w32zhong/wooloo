@@ -12,7 +12,7 @@ services:
       - WG_SERVER_ID=${WG_DEFAULT_SERVER_ID}
     volumes:
       - ./mnt/wg_config:/config
-      - ./templates/wg_client.ini:/_tmp/cfg
+      - ./templates/wg_server.ini:/_tmp/cfg
     entrypoint: >
       /bin/sh -c "
       NEW_KEY=$$(wg genkey);
