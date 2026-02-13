@@ -12,7 +12,7 @@ services:
       - WG_SERVER_ID=${WG_DEFAULT_SERVER_ID}
     volumes:
       - ./mnt/wg_config:/config
-      - ./templates/wg_server.ini:/_temp/server.conf
+      - ./templates/wg_client.ini:/_tmp/cfg
     entrypoint: >
       /bin/sh -c "
       NEW_KEY=$$(wg genkey);
@@ -22,14 +22,13 @@ services:
 
       if [ ! -f /config/wg_confs/wg0.conf ]; then
         mkdir -p /config/wg_confs;
-        sed \"s|{{KEY}}|$${NEW_KEY}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
-        sed \"s|{{IP}}|$${NEW_IP}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
+        cp /_tmp/cfg /config/wg_confs/wg0.conf;
+        sed -i -e \"s|{{KEY}}|$${NEW_KEY}|g\" -e \"s|{{IP}}|$${NEW_IP}|g\" /config/wg_confs/wg0.conf;
         echo '✅ new wg0.conf.';
       else
         echo 'ℹ️ keep existing wg0.conf.';
       fi;
 
-      ip addr flush dev wg0 && ip addr add $${NEW_IP} dev wg0;
       exec /init
       "
     restart: unless-stopped
