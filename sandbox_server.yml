@@ -32,69 +32,71 @@ services:
       exec /init
       "
     restart: unless-stopped
+    networks:
+      - jfs_net
 
-#  redis:
-#    image: redis
-#    container_name: redis_server
-#    restart: always
-#    network_mode: service:wireguard_server
-#    volumes:
-#      # 映射本地文件夹存放 RDB/AOF 数据
-#      - ./mnt/redis_dump:/data
-#    # 使用参数化指令
-#    command: >
-#      redis-server
-#      --maxmemory ${REDIS_MAX_MEMORY:-512mb}
-#      --maxmemory-policy noeviction
-#    healthcheck:
-#      test: ["CMD", "redis-cli", "ping"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
-#    depends_on:
-#      - wireguard_server
-#
-#  jfs_format:
-#    image: juicedata/juicefs
-#    network_mode: service:wireguard_server
-#    command: >
-#      format
-#      --storage s3
-#      --bucket http://10.8.0.1:8333/my-bucket
-#      --access-key ${AWS_ACCESS_KEY_ID}
-#      --secret-key ${AWS_SECRET_ACCESS_KEY}
-#      --capacity ${JFS_CAPACITY_GB}
-#      redis://127.0.0.1:6379/1
-#      ${JFS_NAME}
-#    depends_on:
-#      redis:
-#        condition: service_healthy
-#
-#  jfs_mount:
-#    image: juicedata/juicefs
-#    restart: always
-#    network_mode: service:wireguard_server
-#    cap_add:
-#      - SYS_ADMIN
-#    devices:
-#      - /dev/fuse:/dev/fuse
-#    security_opt:
-#      - apparmor:unconfined
-#    volumes:
-#      - ./jfs_cache:/var/jfs_cache
-#      - ./jfs:/mnt/jfs:shared # 挂载点
-#    command: >
-#      mount
-#      --cache-dir /var/jfs_cache
-#      --buffer-size ${JFS_BUFFER_SIZE_MB}
-#      --cache-size ${JFS_CACHE_SIZE_MB}
-#      --free-space-ratio 0.1
-#      --get-timeout 10
-#      --put-timeout 10
-#      --io-retries 2
-#      redis://127.0.0.1:6379/1
-#      /mnt/jfs
-#    depends_on:
-#      jfs_format:
-#        condition: service_completed_successfully
-#
+  redis_srv:
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./mnt/redis_dump:/data
+    command: >
+      redis-server
+      --maxmemory ${REDIS_MAX_MEMORY:-128mb}
+      --maxmemory-policy noeviction
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jfs_net
+
+  jfs_format:
+    image: juicedata/mount
+    network_mode: service:wireguard_server
+    command: >
+      juicefs format
+      --storage s3
+      --bucket http://10.8.0.1:8333/jfs-bucket-1
+      --access-key any --secret-key any
+      --capacity ${JFS_CAPACITY_GB}
+      redis://redis_srv:6379/1
+      ${JFS_NAME}
+    depends_on:
+      redis_srv:
+        condition: service_healthy
+
+  jfs_mount:
+    image: juicedata/mount
+    restart: always
+    network_mode: service:wireguard_server
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ./mnt/jfs_cache:/var/jfs_cache
+      - ./mnt/jfs:/mnt/jfs:shared
+    command: >
+      juicefs mount
+      --cache-dir /var/jfs_cache
+      --buffer-size ${JFS_BUFFER_SIZE_MB}
+      --cache-size ${JFS_CACHE_SIZE_MB}
+      --free-space-ratio 0.1
+      --get-timeout 10
+      --put-timeout 10
+      --io-retries 2
+      redis://redis_srv:6379/1
+      /mnt/jfs
+    depends_on:
+      jfs_format:
+        condition: service_completed_successfully
+
+networks:
+  jfs_net:
+    driver: bridge
