@@ -88,6 +88,7 @@ services:
 
   wireguard_client:
     image: lscr.io/linuxserver/wireguard
+    container_name: wireguard_client
     cap_add:
       - NET_ADMIN
     environment:
