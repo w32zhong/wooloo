@@ -116,6 +116,16 @@ services:
       exec /init
       "
     restart: unless-stopped
+    networks:
+      - seaweed_net
+
+  socat_s3:
+    image: alpine/socat
+    restart: always
+    network_mode: service:wireguard_client
+    depends_on:
+      - wireguard_client
+    command: "TCP-LISTEN:8333,fork,bind=0.0.0.0 TCP:seaweed_filer:8333"
 
 networks:
   seaweed_net:
