@@ -94,19 +94,27 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
+      - WG_IP=${WG_DEFAULT_CLIENT_IP}
     volumes:
       - ./mnt/wg_config:/config
       - ./templates/wg_client.ini:/_temp/server.conf
     entrypoint: >
       /bin/sh -c "
+      NEW_KEY=$$(wg genkey);
+      NEW_IP=$${WG_IP};
+      echo "PUBKEY: $NEW_KEY";
+      echo "IP: $NEW_IP";
+
       if [ ! -f /config/wg_confs/wg0.conf ]; then
         mkdir -p /config/wg_confs;
-        NEW_KEY=$$(wg genkey);
         sed \"s|{{KEY}}|$${NEW_KEY}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
+        sed \"s|{{IP}}|$${NEW_IP}|g\" /_temp/server.conf > /config/wg_confs/wg0.conf;
         echo '✅ new wg0.conf.';
       else
         echo 'ℹ️ keep existing wg0.conf.';
       fi;
+
+      ip addr flush dev wg0 && ip addr add $NEW_IP dev wg0;
       exec /init
       "
     restart: unless-stopped
