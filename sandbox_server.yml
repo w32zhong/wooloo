@@ -17,7 +17,6 @@ services:
       /bin/sh -c "
       NEW_KEY=$$(wg genkey);
       NEW_IP=10.8.$$((WG_SERVER_ID >> 8)).$$((WG_SERVER_ID & 255));
-      echo \"PUBKEY: $$NEW_KEY\";
       echo \"IP: $$NEW_IP\";
 
       if [ ! -f /config/wg_confs/wg0.conf ]; then
