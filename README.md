@@ -28,3 +28,18 @@ aws s3 --endpoint-url http://${SEAWEED_HOST0}:8333 mb s3://test-bucket
 aws s3 --endpoint-url http://${SEAWEED_HOST0}:8333 cp ~/.bashrc s3://test-bucket
 aws s3 --endpoint-url http://${SEAWEED_HOST0}:8333 ls s3://test-bucket
 ```
+
+Test WireGuard:
+```sh
+./app/wg_connect/wg_connect.sh yetiarch tk
+docker exec wg_client ip addr
+docker exec wg_client wg show
+```
+
+## Sandbox Server
+
+Test WireGuard:
+```sh
+docker exec wg_server ip addr
+docker exec wg_server wg show
+```
