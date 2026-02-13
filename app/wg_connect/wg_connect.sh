@@ -10,8 +10,8 @@ if [ -z "$1" ]; then usage; fi
 
 REMOTE_IP=$1
 REMOTE_USER=${2:-root}
-REMOTE_SERVER_NAME=${3:-wireguard_server}
-LOCAL_CLIENT_NAME=${4:-wireguard_client}
+REMOTE_SERVER_NAME=${3:-wg_server}
+LOCAL_CLIENT_NAME=${4:-wg_client}
 WG_NET="10.8.0.0/16"
 
 echo "⏳ establishing wg tunnel to [${REMOTE_IP}] ..."
