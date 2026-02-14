@@ -59,6 +59,7 @@ docker run \
 ```
 
 ## Core Server
+Test:
 ```sh
-docker build -f app/core/Dockerfile app/core
+curl -X POST http://yetiarch:8001/hello -H "Content-Type: application/json" -d '{"name": "Leo", "age": "18"}'
 ```

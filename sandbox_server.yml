@@ -133,7 +133,7 @@ services:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/pg18_db
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./mnt/backend:/app
+      - ./app/backend:/app
     depends_on:
       proxy:
         condition: service_started

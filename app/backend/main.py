@@ -5,16 +5,16 @@ from pydantic import BaseModel
 app = FastAPI()
 
 
-class UserItem(BaseModel):
+class HelloPerson(BaseModel):
     name: str
     age: int
 
 
 @app.get("/")
 async def read_root():
-    return {"message": "Hello World", "status": "active"}
+    return {"message": "Hello World"}
 
 
-@app.post("/items")
-async def create_item(item: UserItem):
-    return {"msg": f"Hello {item.name}", "age_next_year": item.age + 1}
+@app.post("/hello")
+async def create_item(person: HelloPerson):
+    return {"msg": f"Hello {person.name}", "age_next_year": person.age + 1}

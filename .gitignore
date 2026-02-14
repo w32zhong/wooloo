@@ -1,2 +1,3 @@
 mnt/
 secrets/
+__pycache__/
