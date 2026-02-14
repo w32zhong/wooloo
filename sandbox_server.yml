@@ -102,16 +102,14 @@ services:
       context: app/core
       dockerfile: app/core/Dockerfile
     restart: always
+    network_mode: service:wireguard_server
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/myapp
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@10.8.0.1:5432/pg18_db
       - PYTHONUNBUFFERED=1
     volumes:
       - ./app/core:/app
-    depends_on:
-      db:
-        condition: service_healthy
 
 networks:
   jfs_net:
