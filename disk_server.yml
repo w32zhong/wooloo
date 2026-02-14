@@ -132,11 +132,10 @@ services:
 
   db:
     image: postgres:18
-    container_name: postgres_18
     shm_size: 1gb
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret_pass
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASS
       POSTGRES_DB: pg18_db
     command: >
       postgres
@@ -151,7 +150,24 @@ services:
       interval: 3s
       timeout: 3s
       retries: 5
+    networks:
+      - db_net
+
+  db_webui:
+    image: sosedoff/pgweb
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@db:5432/pg18_db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - db_net
 
 networks:
   seaweed_net:
+    driver: bridge
+  db_net:
     driver: bridge
