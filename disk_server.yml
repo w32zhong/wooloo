@@ -120,15 +120,17 @@ services:
       - seaweed_net
 
   proxy:
-    image: ginuerzh/gost
+    image: gogost/gost
     restart: always
     network_mode: service:wireguard_client
-    depends_on:
-      - wireguard_client
-      - db
+    environment:
+      - GOST_LOGGER_LEVEL=warn
     command:
       - "-L=tcp://:8333/seaweed_filer:8333"
       - "-L=tcp://:5432/db:5432"
+    depends_on:
+      - wireguard_client
+      - db
 
   db:
     image: postgres:18

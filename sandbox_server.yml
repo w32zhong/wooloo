@@ -37,9 +37,11 @@ services:
       - db_net
 
   proxy:
-    image: ginuerzh/gost
+    image: gogost/gost
     restart: always
     network_mode: service:wireguard_server
+    environment:
+      - GOST_LOGGER_LEVEL=warn
     command:
       - "-L=tcp://:8333/10.8.0.1:8333" # S3
       - "-L=tcp://:5432/10.8.0.1:5432" # DB
