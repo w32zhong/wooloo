@@ -97,19 +97,19 @@ services:
       jfs_format:
         condition: service_completed_successfully
 
-  core:
+  backend:
     build:
-      context: app/core
-      dockerfile: app/core/Dockerfile
+      context: ./app/backend
+      dockerfile: Dockerfile
     restart: always
     network_mode: service:wireguard_server
     ports:
-      - "8000:8000"
+      - 8000:8001
     environment:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@10.8.0.1:5432/pg18_db
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./app/core:/app
+      - ./mnt/backend:/app
 
 networks:
   jfs_net:
