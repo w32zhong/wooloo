@@ -120,7 +120,7 @@ services:
       - seaweed_net
 
   proxy:
-    image: gnet/gost
+    image: ginuerzh/gost
     restart: always
     network_mode: service:wireguard_client
     depends_on:
@@ -134,9 +134,9 @@ services:
     image: postgres:18
     shm_size: 1gb
     environment:
-      POSTGRES_USER: $DB_USER
-      POSTGRES_PASSWORD: $DB_PASS
-      POSTGRES_DB: pg18_db
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASS
+      - POSTGRES_DB=pg18_db
     command: >
       postgres
       -c max_connections=200
@@ -144,9 +144,9 @@ services:
       -c effective_io_concurrency=200
       -c random_page_cost=1.1
     volumes:
-      - ./mnt/pg18_data:/var/lib/postgresql/data
+      - ./mnt/pg18_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d fastapi_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d pg18_db"]
       interval: 3s
       timeout: 3s
       retries: 5
@@ -157,9 +157,11 @@ services:
     image: sosedoff/pgweb
     restart: always
     ports:
-      - "8081:8081"
+      - "5433:8081"
     environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@db:5432/pg18_db
+      - PGWEB_DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@db:5432/pg18_db?sslmode=disable
+      - PGWEB_AUTH_USER=${DB_USER}
+      - PGWEB_AUTH_PASS=${DB_PASS}
     depends_on:
       db:
         condition: service_healthy
