@@ -10,6 +10,11 @@ To force restart a container:
 docker compose -f my_compose.yml up --force-recreate my_container
 ```
 
+To clearly see service status:
+```sh
+docker compose -f my_compose.yml ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}"
+```
+
 ## Disk Server
 ```sh
 docker compose -f disk_server.yml up --remove-orphans
