@@ -97,6 +97,22 @@ services:
       jfs_format:
         condition: service_completed_successfully
 
+  core:
+    build:
+      context: app/core
+      dockerfile: app/core/Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/myapp
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./app/core:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
 networks:
   jfs_net:
     driver: bridge

@@ -38,18 +38,22 @@ docker exec wg_client ping -c 1 10.8.0.2
 ```
 
 ## Sandbox Server
-
 Test WireGuard:
 ```sh
 docker exec wg_server ip addr
 docker exec wg_server wg show
 docker exec wg_server ping -c 1 10.8.0.1
 
-# test socat NAT
+# test proxy
 docker exec wg_server curl 10.8.0.1:8333
 docker run \
     --network container:wg_server \
     -e AWS_ACCESS_KEY_ID=any -e AWS_SECRET_ACCESS_KEY=any \
     -it amazon/aws-cli s3 --endpoint-url http://10.8.0.1:8333 \
     ls s3://test-bucket
+```
+
+## Core Server
+```sh
+docker build -f app/core/Dockerfile app/core
 ```

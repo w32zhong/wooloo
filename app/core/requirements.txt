@@ -1,0 +1,3 @@
+fastapi[standard]
+asyncpg[gssauth]
+apache-libcloud
