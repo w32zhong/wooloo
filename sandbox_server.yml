@@ -115,7 +115,7 @@ services:
     ports:
       - 8001:8001
     environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/pg18_db
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/backend_db
       - PYTHONUNBUFFERED=1
     volumes:
       - ./app/backend:/app
@@ -135,9 +135,9 @@ services:
     environment:
       - TRUST_PROXY_HEADER=1 # to see users' real IP
 
-      - DB_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/pg18_db
-      - ENDPOINT=http://localhost:3001
-      - ADMIN_ENDPOINT=http://localhost:3002
+      - DB_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/logto_db
+      - ENDPOINT=http://${BACKEND_HOST}:3001
+      - ADMIN_ENDPOINT=http://${BACKEND_HOST}:3002
     networks:
       - db_net
 
