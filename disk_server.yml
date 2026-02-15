@@ -97,24 +97,9 @@ services:
       - WG_IP=${WG_DEFAULT_CLIENT_IP}
     volumes:
       - ./mnt/wg_config:/config
-      - ./templates/wg_client.ini:/_tmp/cfg
-    entrypoint: >
-      /bin/sh -c "
-      NEW_KEY=$$(wg genkey);
-      NEW_IP=$${WG_IP};
-      echo \"IP: $$NEW_IP\";
-
-      if [ ! -f /config/wg_confs/wg0.conf ]; then
-        mkdir -p /config/wg_confs;
-        cp /_tmp/cfg /config/wg_confs/wg0.conf;
-        sed -i -e \"s|{{KEY}}|$${NEW_KEY}|g\" -e \"s|{{IP}}|$${NEW_IP}|g\" /config/wg_confs/wg0.conf;
-        echo '✅ new wg0.conf.';
-      else
-        echo 'ℹ️ keep existing wg0.conf.';
-      fi;
-
-      exec /init
-      "
+      - ./app/wg_customized/client.ini:/_tmp/cfg
+      - ./app/wg_customized/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     restart: unless-stopped
     networks:
       - seaweed_net

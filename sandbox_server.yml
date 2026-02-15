@@ -13,24 +13,9 @@ services:
       - WG_SERVER_ID=${WG_DEFAULT_SERVER_ID}
     volumes:
       - ./mnt/wg_config:/config
-      - ./templates/wg_server.ini:/_tmp/cfg
-    entrypoint: >
-      /bin/sh -c "
-      NEW_KEY=$$(wg genkey);
-      NEW_IP=10.8.$$((WG_SERVER_ID >> 8)).$$((WG_SERVER_ID & 255));
-      echo \"IP: $$NEW_IP\";
-
-      if [ ! -f /config/wg_confs/wg0.conf ]; then
-        mkdir -p /config/wg_confs;
-        cp /_tmp/cfg /config/wg_confs/wg0.conf;
-        sed -i -e \"s|{{KEY}}|$${NEW_KEY}|g\" -e \"s|{{IP}}|$${NEW_IP}|g\" /config/wg_confs/wg0.conf;
-        echo '✅ new wg0.conf.';
-      else
-        echo 'ℹ️ keep existing wg0.conf.';
-      fi;
-
-      exec /init
-      "
+      - ./app/wg_customized/server.ini:/_tmp/cfg
+      - ./app/wg_customized/entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     restart: unless-stopped
     networks:
       - jfs_net
@@ -137,6 +122,22 @@ services:
     depends_on:
       proxy:
         condition: service_started
+    networks:
+      - db_net
+
+  logto:
+    image: svhd/logto
+    entrypoint: ["sh", "-c", "npm run cli db seed -- --swe && npm start"]
+    ports:
+      - 3001:3001
+      - 3002:3002
+    restart: on-failure
+    environment:
+      - TRUST_PROXY_HEADER=1 # to see users' real IP
+
+      - DB_URL=postgresql://${DB_USER}:${DB_PASS}@wireguard_server:5432/pg18_db
+      - ENDPOINT=http://localhost:3001
+      - ADMIN_ENDPOINT=http://localhost:3002
     networks:
       - db_net
 
