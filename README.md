@@ -48,14 +48,21 @@ Test WireGuard:
 docker exec wg_server ip addr
 docker exec wg_server wg show
 docker exec wg_server ping -c 1 10.8.0.1
+```
 
-# test proxy
+Test S3:
+```sh
 docker exec wg_server curl 10.8.0.1:8333
 docker run \
     --network container:wg_server \
     -e AWS_ACCESS_KEY_ID=any -e AWS_SECRET_ACCESS_KEY=any \
     -it amazon/aws-cli s3 --endpoint-url http://10.8.0.1:8333 \
     ls s3://test-bucket
+```
+
+Test DB:
+```
+docker exec wg_server nc -zv 10.8.0.1 5432
 ```
 
 ## Core Server
