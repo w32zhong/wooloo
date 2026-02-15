@@ -20,18 +20,19 @@ if [ -f /config/wg_confs/wg0.conf ]; then
   cp /_tmp/cfg /tmp/cfg
 
   # extract existing private key
-  SED_KEY=$(grep '^PrivateKey' /config/wg_confs/wg0.conf | cut -d = -f 2 | tr -d ' ')
-
+  SED_KEY=$(awk '/^PrivateKey/ {print $3}' /config/wg_confs/wg0.conf | tr -d ' \r\n')
   # Append all [Peer] sections from old config
   awk '/^\[Peer\]/ {print_flag=1} print_flag {print}' /config/wg_confs/wg0.conf >> /tmp/cfg
 
   mv /tmp/cfg /config/wg_confs/wg0.conf
+
 else
   echo '✅ creating new wg0.conf.'
 
   SED_KEY=$(wg genkey)
   mkdir -p /config/wg_confs
   cp /_tmp/cfg /config/wg_confs/wg0.conf
+
 fi
 
 # Apply Key and IP to the config file
