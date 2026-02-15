@@ -103,6 +103,7 @@ services:
     restart: unless-stopped
     networks:
       - seaweed_net
+      - db_net
 
   proxy:
     image: gogost/gost
